@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Panel de Administración - Clínica</title>
+
+  <!-- Bootstrap 4.4 -->
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css">
+  <link rel="stylesheet" href="css/admin.css">
+</head>
+
+<body>
+
+  <!-- NAVBAR -->
+  <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+    <a class="navbar-brand" href="#">Clínica Salud</a>
+    <div class="ml-auto d-flex align-items-center">
+      <span id="adminName" class="text-white mr-3 font-weight-bold"></span>
+      <button id="logoutBtn" class="btn btn-outline-light btn-sm">Cerrar sesión</button>
+    </div>
+  </nav>
+
+  <!-- CONTENIDO PRINCIPAL -->
+  <div class="container mt-4">
+    <h2 class="mb-4 text-center">Panel de Administración Admin</h2>
+
+    <!-- NAV TABS -->
+    <ul class="nav nav-tabs" id="adminTabs" role="tablist">
+      <li class="nav-item">
+        <a class="nav-link active" id="doctors-tab" data-toggle="tab" href="#doctors" role="tab">Médicos</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" id="appointments-tab" data-toggle="tab" href="#appointments" role="tab">Turnos</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" id="users-tab" data-toggle="tab" href="#users" role="tab">Usuarios</a>
+      </li>
+    </ul>
+
+    <div class="tab-content" id="adminTabsContent">
+
+      <!-- TAB MÉDICOS -->
+      <div class="tab-pane fade show active" id="doctors" role="tabpanel">
+        <div class="d-flex justify-content-between align-items-center mt-3">
+          <h4>Listado de Médicos</h4>
+          <button id="addDoctorBtn" class="btn btn-success btn-sm" data-toggle="modal" data-target="#modalDr">+ Nuevo
+            Médico</button>
+        </div>
+
+        <div class="table-responsive mt-3">
+          <table class="table table-bordered table-hover">
+            <thead class="thead-light">
+              <tr>
+                <th>ID</th>
+                <th>Nombre</th>
+                <th>Especialidad</th>
+                <th>Días Disponibles</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="doctorsTableBody">
+              <!-- Filas generadas dinámicamente con JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- TAB TURNOS -->
+      <div class="tab-pane fade" id="appointments" role="tabpanel">
+        <div class="d-flex justify-content-between align-items-center mt-3">
+          <h4>Listado de Turnos</h4>
+        </div>
+
+        <div class="table-responsive mt-3">
+          <table class="table table-bordered table-hover">
+            <thead class="thead-light">
+              <tr>
+                <th>ID</th>
+                <th>Paciente</th>
+                <th>Médico</th>
+                <th>Fecha</th>
+                <th>Hora</th>
+                <th>Estado</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="appointmentsTableBody">
+              <!-- Filas generadas dinámicamente con JS -->
+            </tbody>
+          </table>
+        </div>
+        <br>
+        <div id="dashboard">
+          
+        </div>
+      </div>
+
+      <!-- TAB USUARIOS -->
+      <div class="tab-pane fade" id="users" role="tabpanel">
+        <div class="d-flex justify-content-between align-items-center mt-3">
+          <h4>Listado de Usuarios</h4>
+          <button id="refreshAppointmentsBtn" class="btn btn-success btn-sm" data-toggle="modal"
+            data-target="#modalNuevoUsuario">+ Nuevo Usuario</button>
+        </div>
+
+        <div class="table-responsive mt-3">
+          <table class="table table-bordered table-hover">
+            <thead class="thead-light">
+              <tr>
+                <!-- id, nombre, email, password, role -->
+                <th>ID</th>
+                <th>Nombre</th>
+                <th>Email</th>
+                <th>Contraseña</th>
+                <th>Rol</th>
+                <th>Acciones</th>
+
+              </tr>
+            </thead>
+            <tbody id="usersTableBody">
+              <!-- Filas generadas dinámicamente con JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- MODAL NUEVO MÉDICO -->
+  <div class="modal fade" id="modalDr" tabindex="-1" role="dialog" aria-labelledby="modalDrLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <form id="doctorForm">
+          <div class="modal-header bg-primary text-white">
+            <h5 class="modal-title" id="modalDrLabel">Nuevo Médico</h5>
+            <button type="button" class="close text-white" data-dismiss="modal">&times;</button>
+          </div>
+          <div class="modal-body">
+            <div class="form-group">
+              <label for="doctorName">Nombre</label>
+              <input type="text" class="form-control" id="doctorName" required>
+            </div>
+            <div class="form-group">
+              <label for="doctorSpecialty">Especialidad</label>
+              <input type="text" class="form-control" id="doctorSpecialty" required>
+            </div>
+            <div class="form-group">
+              <label>Días Disponibles</label><br>
+
+              <label><input type="checkbox" class="diasCheck" value="Lunes"> Lunes</label><br>
+              <label><input type="checkbox" class="diasCheck" value="Martes"> Martes</label><br>
+              <label><input type="checkbox" class="diasCheck" value="Miércoles"> Miércoles</label><br>
+              <label><input type="checkbox" class="diasCheck" value="Jueves"> Jueves</label><br>
+              <label><input type="checkbox" class="diasCheck" value="Viernes"> Viernes</label><br>
+              <label><input type="checkbox" class="diasCheck" value="Sábado"> Sábado</label><br>
+              <label><input type="checkbox" class="diasCheck" value="Domingo"> Domingo</label><br>
+            </div>
+
+          </div>
+          <div class="modal-footer">
+            <button type="submit" class="btn btn-success">Guardar</button>
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL ACTUALIZAR MÉDICO -->
+  <div class="modal fade" id="modalDrEdit" tabindex="-1" role="dialog" aria-labelledby="modalDrLabelEdit"
+    aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <form id="doctorFormEdit">
+          <div class="modal-header bg-primary text-white">
+            <h5 class="modal-title" id="modalDrLabelEdit">Editar Médico</h5>
+            <button type="button" class="close text-white" data-dismiss="modal">&times;</button>
+          </div>
+          <div class="modal-body">
+            <div class="form-group">
+              <label for="doctorNameEdit">Nombre</label>
+              <input type="text" class="form-control" id="doctorNameEdit" required>
+            </div>
+            <div class="form-group">
+              <label for="doctorSpecialtyEdit">Especialidad</label>
+              <input type="text" class="form-control" id="doctorSpecialtyEdit" required>
+            </div>
+            <div class="form-group">
+              <label>Días Disponibles</label><br>
+
+              <label><input type="checkbox" class="diasCheckEdit" value="Lunes"> Lunes</label><br>
+              <label><input type="checkbox" class="diasCheckEdit" value="Martes"> Martes</label><br>
+              <label><input type="checkbox" class="diasCheckEdit" value="Miércoles"> Miércoles</label><br>
+              <label><input type="checkbox" class="diasCheckEdit" value="Jueves"> Jueves</label><br>
+              <label><input type="checkbox" class="diasCheckEdit" value="Viernes"> Viernes</label><br>
+              <label><input type="checkbox" class="diasCheckEdit" value="Sábado"> Sábado</label><br>
+              <label><input type="checkbox" class="diasCheckEdit" value="Domingo"> Domingo</label><br>
+            </div>
+
+          </div>
+          <div class="modal-footer">
+            <button type="submit" class="btn btn-success">Guardar</button>
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL NUEVO USER -->
+  <div class="modal fade" id="modalNuevoUsuario" tabindex="-1" role="dialog" aria-labelledby="modalNuevoUsuarioLabel"
+    aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+
+        <!-- Header -->
+        <div class="modal-header">
+          <h5 class="modal-title" id="modalNuevoUsuarioLabel">Nuevo Usuario</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Cerrar">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+
+        <!-- Body -->
+        <div class="modal-body">
+          <form id="formNuevoUsuario">
+
+            <div class="form-group">
+              <label for="nombreUsuario">Nombre</label>
+              <input type="text" class="form-control" id="nombreUsuario" required>
+            </div>
+
+            <div class="form-group">
+              <label for="emailUsuario">Email</label>
+              <input type="email" class="form-control" id="emailUsuario" required>
+            </div>
+
+            <div class="form-group">
+              <label for="passwordUsuario">Contraseña</label>
+              <input type="password" class="form-control" id="passwordUsuario" required>
+            </div>
+
+            <div class="form-group">
+              <label for="rolUsuario">Rol</label>
+              <select class="form-control" id="rolUsuario" required>
+                <option value="">Seleccione...</option>
+                <option value="ADMIN">ADMIN</option>
+                <option value="USER">USER</option>
+              </select>
+            </div>
+
+          </form>
+        </div>
+
+        <!-- Footer -->
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+          <button type="submit" form="formNuevoUsuario" class="btn btn-primary">Guardar</button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL EDITAR USER -->
+  <div class="modal fade" id="modalEditUsuario" tabindex="-1" role="dialog" aria-labelledby="modalEditUsuarioLabel"
+    aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+
+        <!-- Header -->
+        <div class="modal-header">
+          <h5 class="modal-title" id="modalEditUsuarioLabel">Editar Usuario</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Cerrar">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+
+        <!-- Body -->
+        <div class="modal-body">
+          <form id="formEditUsuario">
+
+            <div class="form-group">
+              <label for="nombreUsuarioEdit">Nombre</label>
+              <input type="text" class="form-control" id="nombreUsuarioEdit" required>
+            </div>
+
+            <div class="form-group">
+              <label for="emailUsuarioEdit">Email</label>
+              <input type="email" class="form-control" id="emailUsuarioEdit" required>
+            </div>
+
+            <div class="form-group">
+              <label for="passwordUsuarioEdit">Contraseña</label>
+              <input type="password" class="form-control" id="passwordUsuarioEdit" required>
+            </div>
+
+            <div class="form-group">
+              <label for="rolUsuarioEdit">Rol</label>
+              <select class="form-control" id="rolUsuarioEdit" required>
+                <option value="">Seleccione...</option>
+                <option value="ADMIN">ADMIN</option>
+                <option value="USER">USER</option>
+              </select>
+            </div>
+
+          </form>
+        </div>
+
+        <!-- Footer -->
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+          <button type="submit" form="formEditUsuario" class="btn btn-primary">Guardar</button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  
+
+
+  <!-- JS de Bootstrap y scripts -->
+  <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"></script>
+
+  <!-- Script principal -->
+  <!-- <script type="module" src="../js/login.js"></script> -->
+  <script type="module" src="../js/api.js"></script>
+  <script type="module" src="../js/auth.js"></script>
+  <script type="module" src="../js/admin.js"></script>
+  <!-- <script type="module" src="../js/user.js"></script> -->
+
+
+
+</body>
+
+</html>

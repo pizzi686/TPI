@@ -4,7 +4,7 @@ import { login } from "./auth.js";
 
 
 
-
+//login
 document.getElementById("loginForm").addEventListener("submit", async (e) => {
     e.preventDefault(); // evita refrescar la página
 

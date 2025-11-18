@@ -1,16 +1,18 @@
-import { createUser, getAllAppointments, getAllDoctors, createDoctor, deleteDoctor, getDoctorById, updateDoctor, updateUser, getAppointmentById, updateAppointment } from "./api.js"
+import { createUser, getAllAppointments, getAllDoctors, createDoctor, deleteDoctor, getDoctorById, updateDoctor, updateUser, getAppointmentById, updateAppointment, getUserByRol } from "./api.js"
 import { getAllUsers, deleteUser, getUserById } from "./api.js";
 import { logout, getUsuarioSesion } from "./auth.js";
 
+//obtener sesion
 const usuario = getUsuarioSesion();
 
+// no está logueado
 if (!usuario) {
-    window.location.href = "login.html";   // no está logueado
+    window.location.href = "login.html";
 }
 
 // Si no es admin → lo saco
 if (usuario.rol !== "ADMIN") {
-    window.location.href = "usuario.html";
+    window.location.href = "user.html";
 }
 
 //cerrar sesion
@@ -19,20 +21,67 @@ document.getElementById("logoutBtn").addEventListener("click", () => {
 })
 
 
-
-
 //cargar datos api
 document.addEventListener("DOMContentLoaded", async () => {
-    const doctors = await getAllDoctors()
-    cargarTablaDoctores(doctors);
-    const users = await getAllUsers()
-    cargarTablaUsuarios(users)
-    const turnos = await getAllAppointments()
-    cargarTablaTurnos(turnos)
-    document.getElementById("adminName").innerText = usuario.nombre
+    const doctors = await getAllDoctors();
+    const users = await getUserByRol("USER");
 
+    cargarSelectPacientes(users);
+    cargarSelectDoctores(doctors);
+
+    cargarTablaUsuarios(users);
+    cargarTablaDoctores(doctors);
+
+    const turnos = await getAllAppointments();
+    cargarTablaTurnos(turnos);
+
+    document.getElementById("adminName").innerText = usuario.nombre;
 }
 )
+
+//cargar pacientes para filtrar en tabla turnos 
+function cargarSelectPacientes(users) {
+    const sel = document.getElementById("filtroPaciente");
+    users.forEach(u => {
+        const op = document.createElement("option");
+        op.value = u.id;
+        op.textContent = u.nombre;
+        sel.appendChild(op);
+    });
+}
+
+function cargarSelectDoctores(doctors) {
+    const sel = document.getElementById("filtroDoctor");
+    doctors.forEach(d => {
+        const op = document.createElement("option");
+        op.value = d.id;
+        op.textContent = d.nombre;
+        sel.appendChild(op);
+    });
+}
+
+
+//elegir paciente/doctor para tabla turnos 
+document.getElementById("filtroPaciente").addEventListener("change", aplicarFiltros);
+document.getElementById("filtroDoctor").addEventListener("change", aplicarFiltros);
+
+async function aplicarFiltros() {
+    const pacienteId = document.getElementById("filtroPaciente").value;
+    const doctorId = document.getElementById("filtroDoctor").value;
+
+    const todosTurnos = await getAllAppointments();
+
+    const filtrados = todosTurnos.filter(t => {
+        const okPaciente = (pacienteId === "todos") || (t.patientId == pacienteId);
+        const okDoctor = (doctorId === "todos") || (t.doctorId == doctorId);
+        return okPaciente && okDoctor;
+    });
+
+    cargarTablaTurnos(filtrados);
+    refrescarDashboardFiltrado(filtrados); // opcional
+}
+
+
 
 //addUser
 
@@ -85,7 +134,7 @@ document.getElementById("doctorForm").addEventListener("submit", async (e) => {
 });
 
 
-// --- Borrar usuario --- ✅
+// --- Borrar usuario --- 
 document.getElementById("usersTableBody").addEventListener("click", async (e) => {
 
     if (e.target.classList.contains("borrarUsuario")) {
@@ -103,7 +152,7 @@ document.getElementById("usersTableBody").addEventListener("click", async (e) =>
     }
 });
 
-//borrar doctor ✅
+//borrar doctor 
 document.getElementById("doctorsTableBody").addEventListener("click", async (e) => {
 
     if (e.target.classList.contains("BorrarDr")) {
@@ -280,8 +329,6 @@ document.getElementById("appointmentsTableBody").addEventListener("click", async
 
 
 
-
-//✅
 function cargarTablaDoctores(doctors) {
     const tbody = document.getElementById("doctorsTableBody");
     tbody.innerHTML = ""; // limpiar antes de cargar
@@ -303,7 +350,7 @@ function cargarTablaDoctores(doctors) {
     });
 }
 
-//✅
+
 function cargarTablaUsuarios(users) {
     const tbody = document.getElementById("usersTableBody");
     tbody.innerHTML = ""; // limpiar antes de cargar
@@ -329,53 +376,206 @@ function cargarTablaUsuarios(users) {
 }
 
 
-//✅
+
 async function refrescarUsuarios() {
     const users = await getAllUsers();
     cargarTablaUsuarios(users);
 }
-//✅
+
 async function refrescarDoctores() {
     const doctors = await getAllDoctors();
     cargarTablaDoctores(doctors);
 }
 
-async function refrescarTurnos() {
+export async function refrescarTurnos() {
     const turnos = await getAllAppointments();
     cargarTablaTurnos(turnos);
 }
 
-async function refrescarDashboard() {
-    const dashboard = document.getElementById("dashboard")
-    dashboard.innerHTML = ""
 
-    const turnos = await getAllAppointments()
-    //total estados
-    let totalPendiente = 0
-    let totalCancelado = 0
-    let totalConfirmado = 0
-    for (const turno of turnos) {
-        // console.log(turno.estado="Cancelado")
-        if (turno.estado == "Pendiente") { totalPendiente += 1 }
-        if (turno.estado == "Cancelado") { totalCancelado += 1 }
-        if (turno.estado == "Confirmado") { totalConfirmado += 1 }
 
+async function refrescarDashboard(turnosForzados = null) {
+
+    const dashboard = document.getElementById("dashboard");
+    dashboard.innerHTML = "";
+
+    const turnos = turnosForzados || await getAllAppointments();
+    const doctors = await getAllDoctors();
+    const patients = await getAllUsers();
+    // =============================
+    //   MÉTRICAS BÁSICAS
+    // =============================
+    const hoy = hoyLocal(); // "2025-11-17"
+
+    // Convertimos hoyLocal() a Date real sin UTC
+    const d = new Date(`${hoy}T00:00:00`);
+
+    // día de la semana (0 = domingo)
+    const diaSemana = d.getDay();
+
+    // si hoy es domingo, limite = hoy
+    const diasHastaDomingo = diaSemana === 0 ? 0 : (7 - diaSemana);
+
+    // sumar días hasta domingo
+    const limiteDate = new Date(d.getTime() + diasHastaDomingo * 24 * 60 * 60 * 1000);
+
+    // formatear como YYYY-MM-DD
+    const limiteSemana = limiteDate.toISOString().slice(0, 10);
+
+    let totalPendiente = 0;
+    let totalCancelado = 0;
+    let totalConfirmado = 0;
+    let turnosHoy = 0;
+    let turnosSemana = 0;
+
+    for (const t of turnos) {
+        if (t.estado === "Pendiente") totalPendiente++;
+        if (t.estado === "Cancelado") totalCancelado++;
+        if (t.estado === "Confirmado") totalConfirmado++;
+
+        if (t.fecha === hoy) turnosHoy++;
+
+        if (t.fecha >= hoy && t.fecha <= limiteSemana) turnosSemana++;
     }
 
+    const totalTurnos = turnos.length;
+    //const totalPacientes = patients?.length || 1;
+    // const promedioPorPaciente = (totalTurnos / totalPacientes).toFixed(1);
+
+    // =============================
+    //   HTML COMPLETO DEL DASHBOARD
+    // =============================
     dashboard.innerHTML = `
-    <h5>Total Estados de los turnos</h5>
-    <div>
-        <p>Total de turnos cancelados: ${totalCancelado}</p>
-        <p>Total de turnos pendientes: ${totalPendiente}</p>
-        <p>Total de turnos confirmados: ${totalConfirmado}</p>
-    </div>
-    `
+        <h3 class="mb-3">Dashboard de Turnos</h3>
+
+        <!-- CARDS -->
+        <div class="row mb-3">
+            <div class="col-md-4">
+                <div class="card text-white bg-primary mb-3">
+                    <div class="card-body ">
+                        <h5 class="card-title text-center">Turnos Hoy</h5>
+                        <p class="card-text display-4 text-center">${turnosHoy}</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="card text-white bg-info mb-3">
+                    <div class="card-body">
+                        <h5 class="card-title text-center">Turnos Semana</h5>
+                        <p class="card-text display-4 text-center">${turnosSemana}</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="card text-white bg-success mb-3">
+                    <div class="card-body">
+                        <h5 class="card-title text-center">Total Turnos</h5>
+                        <p class="card-text display-4 text-center">${totalTurnos}</p>
+                    </div>
+                </div>
+            </div>
+
+            
+        </div>
+
+        <!-- GRÁFICOS -->
+        <div class="row">
+            <div class="col-md-4">
+                <h5>Estados</h5>
+                <canvas id="chartEstados" height="250"></canvas>
+            </div>
+
+            <div class="col-md-4">
+                <h5>Turnos por Doctor</h5>
+                <canvas id="chartDoctors" height="250"></canvas>
+            </div>
+
+            <div class="col-md-4">
+                <h5>Especialidades</h5>
+                <canvas id="chartEspecialidades" height="250"></canvas>
+            </div>
+        </div>
+
+
+
+    `;
+
+    // =============================
+    //   CHART: ESTADOS (Pie)
+    // =============================
+    new Chart(document.getElementById("chartEstados"), {
+        type: "pie",
+        data: {
+            labels: ["Pendientes", "Confirmados", "Cancelados"],
+            datasets: [{
+                data: [totalPendiente, totalConfirmado, totalCancelado],
+                backgroundColor: ["#ffc107", "#28a745", "#dc3545"]
+            }]
+        }
+    });
+
+    // =============================
+    //   CHART: TURNOS POR DOCTOR
+    // =============================
+    const labelsDoctors = doctors.map(d => d.nombre);
+    const turnosPorDoctor = doctors.map(d =>
+        turnos.filter(t => t.doctorId == d.id).length
+    );
+
+    new Chart(document.getElementById("chartDoctors"), {
+        type: "bar",
+        data: {
+            labels: labelsDoctors,
+            datasets: [{
+                label: "Turnos",
+                data: turnosPorDoctor,
+                backgroundColor: "#007bff"
+            }]
+        },
+        options: { scales: { y: { beginAtZero: true } } }
+    });
+
+    // =============================
+    //   CHART: ESPECIALIDADES
+    // =============================
+    const mapaEspecialidad = {};
+    for (const d of doctors) mapaEspecialidad[d.especialidad] = 0;
+    for (const t of turnos) {
+        const doctor = doctors.find(d => d.id == t.doctorId);
+        if (doctor) mapaEspecialidad[doctor.especialidad]++;
+    }
+
+    new Chart(document.getElementById("chartEspecialidades"), {
+        type: "doughnut",
+        data: {
+            labels: Object.keys(mapaEspecialidad),
+            datasets: [{
+                data: Object.values(mapaEspecialidad),
+                backgroundColor: ["#17a2b8", "#6f42c1", "#20c997", "#fd7e14"]
+            }]
+        }
+    });
+
 
 
 }
 
 
-//✅
+function refrescarDashboardFiltrado(turnosFiltrados) {
+
+    refrescarDashboard(turnosFiltrados);
+
+}
+
+function refrescarDashboardConTurnos(turnos) {
+    refrescarDashboard(turnos);
+}
+
+
+
+
 async function cargarTablaTurnos(turnos) {
     const tbody = document.getElementById("appointmentsTableBody");
     tbody.innerHTML = ""; // limpiar antes de cargar
@@ -430,3 +630,10 @@ document.getElementById("appointments-tab").addEventListener("click", async (e) 
 
 
 
+function hoyLocal() {// para no usar utc y tener la hora correcta 
+    const d = new Date();
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, "0");
+    const day = String(d.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+}

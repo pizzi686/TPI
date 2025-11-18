@@ -16,6 +16,13 @@ export function getUserById(id) {
         .then(r => r.json());
 }
 
+// obtener usuario por rol
+export function getUserByRol(rol) {
+    return fetch(`${BASE_URL}/user?rol=${rol}`)
+        .then(r => r.json());
+}
+
+
 
 // obtener todos los usuarios
 export function getAllUsers() {

@@ -1,6 +1,7 @@
 import { getAllAppointments, getAllDoctors, getAppointmentById, getAppointmentByPatient, getAppointmentsByDoctor, getDoctorById, updateAppointment } from "./api.js"
 import { createAppointment } from "./api.js";
 import { getUsuarioSesion, logout } from "./auth.js";
+//import { refrescarTurnos  as rta }from "./admin.js";
 
 //obtener datos sesion localstorage
 const usuario = getUsuarioSesion();
@@ -121,6 +122,7 @@ document.getElementById("misTurnosTableBody").addEventListener("click", async (e
         alert("turno cancelado.");
 
         refrescarTurnos()
+       // rta()
 
 
     }
@@ -178,26 +180,26 @@ document.getElementById("nuevoTurnoForm").addEventListener("submit", async (e) =
         alert("Turno reservado con éxito");
         document.getElementById("nuevoTurnoForm").reset();
         refrescarTurnos();
+       // rta()
     } else {
         alert("Hubo un error al reservar el turno.");
     }
 });
 
 
-
-
-
-//
+//obtener dia semana 
 
 function obtenerDiaSemana(fechaInput) {
     const dias = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
-    const d = new Date(fechaInput+"T00:00:00");
+    
+    // descomponer AAAA-MM-DD
+    const [anio, mes, dia] = fechaInput.split("-").map(Number);
 
-     console.log(d)
-     console.log(fechaInput)
+    // crear fecha evitando UTC: año, mes-1, día
+    const d = new Date(anio, mes - 1, dia);
+
     return dias[d.getDay()];
 }
-
 
 
 

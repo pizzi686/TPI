@@ -72,6 +72,24 @@
         <div class="d-flex justify-content-between align-items-center mt-3">
           <h4>Listado de Turnos</h4>
         </div>
+<div class="row mt-3 mb-3">
+  <div class="col-md-4">
+    <label>Filtrar por Paciente:</label>
+    <select class="form-control" id="filtroPaciente">
+      <option value="todos">Todos los pacientes</option>
+      <!-- JS cargará el resto -->
+    </select>
+  </div>
+
+  <div class="col-md-4">
+    <label>Filtrar por Médico:</label>
+    <select class="form-control" id="filtroDoctor">
+      <option value="todos">Todos los médicos</option>
+      <!-- JS cargará el resto -->
+    </select>
+  </div>
+</div>
+
 
         <div class="table-responsive mt-3">
           <table class="table table-bordered table-hover">
@@ -321,7 +339,8 @@
   </div>
 
   
-
+<!-- chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
   <!-- JS de Bootstrap y scripts -->
   <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js"></script>
@@ -333,7 +352,8 @@
   <script type="module" src="../js/api.js"></script>
   <script type="module" src="../js/auth.js"></script>
   <script type="module" src="../js/admin.js"></script>
-  <!-- <script type="module" src="../js/user.js"></script> -->
+  
+
 
 
 

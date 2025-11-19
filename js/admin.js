@@ -34,7 +34,11 @@ document.addEventListener("DOMContentLoaded", async () => {
     cargarTablaDoctores(doctors);
 
     const turnos = await getAllAppointments();
-    cargarTablaTurnos(turnos);
+
+    const ordenados = turnos.sort((a, b) => {
+        return new Date(a.fecha) - new Date(b.fecha);
+    });
+    cargarTablaTurnos(ordenados);
 
     document.getElementById("adminName").innerText = usuario.nombre;
 }
@@ -78,8 +82,12 @@ async function aplicarFiltros() {
         return okPaciente && okDoctor;
     });
 
-    cargarTablaTurnos(filtrados);
-    refrescarDashboardFiltrado(filtrados); // opcional
+
+    const ordenados = filtrados.sort((a, b) => {
+        return new Date(a.fecha) - new Date(b.fecha);
+    });
+    cargarTablaTurnos(ordenados);
+    refrescarDashboardFiltrado(ordenados); // opcional
 }
 
 
@@ -147,7 +155,7 @@ document.getElementById("usersTableBody").addEventListener("click", async (e) =>
         const id = e.target.dataset.id;
 
         const ok = await confirmarAccion("¿Seguro que querés borrar este usuario?")
-        
+
         if (!ok) return;
 
         await deleteUser(id);
@@ -289,7 +297,7 @@ document.getElementById("appointmentsTableBody").addEventListener("click", async
     if (e.target.classList.contains("confirmarTurno")) {
         const id = e.target.dataset.id;
         const turno = await getAppointmentById(id)
-        const ok= await confirmarAccion("esta segurno de confirmar este turno?")
+        const ok = await confirmarAccion("esta segurno de confirmar este turno?")
         if (ok) {
             if (turno.estado == "Pendiente") {
                 const turnoActualizado = {
@@ -394,12 +402,12 @@ export async function refrescarTurnos() {
 
 
 
-async function refrescarDashboard(turnosForzados = null) {
+async function refrescarDashboard(turnosFiltrados = null) {
 
     const dashboard = document.getElementById("dashboard");
     dashboard.innerHTML = "";
 
-    const turnos = turnosForzados || await getAllAppointments();
+    const turnos = turnosFiltrados || await getAllAppointments();
     const doctors = await getAllDoctors();
     const patients = await getAllUsers();
     // =============================

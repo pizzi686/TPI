@@ -22,8 +22,6 @@ export function getUserByRol(rol) {
         .then(r => r.json());
 }
 
-
-
 // obtener todos los usuarios
 export function getAllUsers() {
     return fetch(`${BASE_URL}/user`)
@@ -110,7 +108,6 @@ export function getAppointmentByPatient(id) {
     return fetch(`${BASE_URL_APPOINTMENT}/appointments?patientId=${id}`)
         .then(r => r.json());
 }
-
 
 // obtener turno por ID
 export function getAppointmentById(id) {

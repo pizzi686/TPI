@@ -6,9 +6,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Panel del Usuario - Clínica</title>
 
-  <!-- Bootstrap 4.4 -->
-  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css">
-  <link rel="stylesheet" href="css/style.css">
+
+  <link rel="stylesheet" href="https://bootswatch.com/4/lux/bootstrap.min.css">
+
 </head>
 
 <body>
@@ -24,6 +24,10 @@
 
   <!-- CONTENIDO PRINCIPAL -->
   <div class="container mt-4">
+    <div class="alert alert-dismissible alert-success" id="OpConcretada" style="display: none;">
+      <button type="button" class="close" data-dismiss="alert">&times;</button>
+      <label for="" id="mensaje"></label>
+    </div>
     <h2 class="mb-4 text-center">Bienvenido al Portal de Turnos</h2>
 
 
@@ -58,7 +62,7 @@
           <!-- Fecha -->
           <div class="form-group">
             <label for="fechaTurno">Fecha</label>
-            <input type="date" id="fechaTurno" class="form-control" required>
+            <input type="date" id="fechaTurno" class="form-control" min=""required>
           </div>
 
           <!-- Hora -->
@@ -101,6 +105,56 @@
     </div>
 
 
+
+      <!-- MODAL CONFIRM -->
+  <div class="modal fade" id="modalConfirm" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+
+        <div class="modal-header">
+          <h5 class="modal-title">Confirmación</h5>
+          <button type="button" class="close" data-dismiss="modal">&times;</button>
+        </div>
+
+        <div class="modal-body">
+          <p id="modalConfirmMessage">¿Estás seguro?</p>
+        </div>
+
+        <div class="modal-footer">
+          <button class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+          <button class="btn btn-danger" id="btnConfirmarAccion">Confirmar</button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+
+  <!-- Modal  Alert -->
+<div class="modal fade" id="alertModal" tabindex="-1" role="dialog" aria-labelledby="alertModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-sm modal-dialog-centered" role="document">
+    <div class="modal-content">
+
+      <div class="modal-header bg-primary text-white py-2">
+        <h5 class="modal-title text-white" id="alertModalLabel">Mensaje</h5>
+        <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+          <span>&times;</span>
+        </button>
+      </div>
+
+      <div class="modal-body text-center" id="alertModalMessage">
+        <!-- Mensaje  -->
+      </div>
+
+      <div class="modal-footer p-2">
+        <button type="button" class="btn btn-primary btn-block" data-dismiss="modal">Aceptar</button>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+
   </div>
   </div>
   </div>
@@ -114,8 +168,8 @@
 
 
 
-  
-  
+
+
   <script type="module" src="../js/api.js"></script>
   <script type="module" src="../js/auth.js"></script>
   <script type="module" src="../js/user.js"></script>

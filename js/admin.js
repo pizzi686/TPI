@@ -24,12 +24,13 @@ document.getElementById("logoutBtn").addEventListener("click", () => {
 //cargar datos api
 document.addEventListener("DOMContentLoaded", async () => {
     const doctors = await getAllDoctors();
-    const users = await getUserByRol("USER");
+    const users = await getUserByRol("USER");//pacientes 
+    const allUsers = await getAllUsers();
 
     cargarSelectPacientes(users);
     cargarSelectDoctores(doctors);
 
-    cargarTablaUsuarios(users);
+    cargarTablaUsuarios(allUsers);
     cargarTablaDoctores(doctors);
 
     const turnos = await getAllAppointments();
@@ -39,7 +40,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 }
 )
 
-//cargar pacientes para filtrar en tabla turnos 
+//crear option para filtrar pacientes y doctores  
 function cargarSelectPacientes(users) {
     const sel = document.getElementById("filtroPaciente");
     users.forEach(u => {
@@ -98,7 +99,9 @@ document.getElementById("formNuevoUsuario").addEventListener("submit", async (e)
     const saved = await createUser(nuevoUsuario);
 
     if (saved) {
-        alert("Usuario creado!");
+
+        showIndicator(`Usuario ${nombre} creado correctamente`)
+
         refrescarUsuarios()
         $("#modalNuevoUsuario").modal("hide");
         e.target.reset();
@@ -126,7 +129,9 @@ document.getElementById("doctorForm").addEventListener("submit", async (e) => {
     const saved = await createDoctor(nuevoDoctor);
 
     if (saved) {
-        alert("Médico creado!");
+        // alert("Médico creado!");
+        showIndicator(`Médico ${nombre} creado correctamente`)
+
         refrescarDoctores();
         $("#modalDr").modal("hide");
         e.target.reset();
@@ -141,11 +146,13 @@ document.getElementById("usersTableBody").addEventListener("click", async (e) =>
 
         const id = e.target.dataset.id;
 
-        const ok = confirm("¿Seguro que querés borrar este usuario?");
+        const ok = await confirmarAccion("¿Seguro que querés borrar este usuario?")
+        
         if (!ok) return;
 
         await deleteUser(id);
-        alert("Usuario eliminado correctamente.");
+        // alert("Usuario eliminado correctamente.");
+        showIndicator("Usuario eliminado correctamente", "danger")
 
         // refrescar tabla
         refrescarUsuarios()
@@ -159,11 +166,13 @@ document.getElementById("doctorsTableBody").addEventListener("click", async (e) 
 
         const id = e.target.dataset.id;
 
-        const ok = confirm("¿Seguro que querés borrar este Doctor?");
+        const ok = await confirmarAccion("¿Seguro que querés borrar este Doctor?");
         if (!ok) return;
 
         await deleteDoctor(id);
-        alert("Doctor eliminado correctamente.");
+        // alert("Doctor eliminado correctamente.");
+        showIndicator("Doctor eliminado correctamente", "danger")
+
 
         // refrescar tabla
         refrescarDoctores()
@@ -178,114 +187,101 @@ document.getElementById("doctorsTableBody").addEventListener("click", async (e) 
 
         const id = e.target.dataset.id;
 
-        const drActual = await getDoctorById(id)
-        // Cargar datos en el modal
+        const drActual = await getDoctorById(id);
+
         document.getElementById("doctorNameEdit").value = drActual[0].nombre;
         document.getElementById("doctorSpecialtyEdit").value = drActual[0].especialidad;
 
-        // Limpiar todos los checks
         document.querySelectorAll(".diasCheckEdit").forEach(chk => chk.checked = false);
 
-        // // Marcar días del médico
         drActual[0].diasDisponibles.forEach(dia => {
             const check = document.querySelector(`.diasCheckEdit[value="${dia}"]`);
             if (check) check.checked = true;
         });
 
-        // Abrir modal
+        // 👉 Guardamos el ID en el form
+        document.getElementById("doctorFormEdit").dataset.idDoctor = drActual[0].id;
+
         $("#modalDrEdit").modal("show");
-
-
-        //subbmit forom
-        document.getElementById("doctorFormEdit").addEventListener("submit", async (e) => {
-            e.preventDefault();
-
-            const nombre = document.getElementById("doctorNameEdit").value;
-            const especialidad = document.getElementById("doctorSpecialtyEdit").value;
-
-            const diasDisponibles = Array.from(
-                document.querySelectorAll(".diasCheckEdit:checked")
-            ).map(c => c.value);
-
-            const doctor = {
-                nombre,
-                especialidad,
-                diasDisponibles
-            };
-
-            const updated = await updateDoctor(drActual[0].id, doctor);
-
-            if (updated) {
-                alert("Datos actualizados!");
-                refrescarDoctores();
-                $("#modalDrEdit").modal("hide");
-                e.target.reset();
-            }
-
-        });
-
-
     }
+});
 
-    refrescarDoctores()
+document.getElementById("doctorFormEdit").addEventListener("submit", async (e) => {
+
+    e.preventDefault();
+
+    const id = e.target.dataset.idDoctor; // lo que guardamos antes
+
+    const nombre = document.getElementById("doctorNameEdit").value;
+    const especialidad = document.getElementById("doctorSpecialtyEdit").value;
+
+    const diasDisponibles = [...document.querySelectorAll(".diasCheckEdit:checked")]
+        .map(c => c.value);
+
+    const doctor = { nombre, especialidad, diasDisponibles };
+
+    const updated = await updateDoctor(id, doctor);
+    console.log("UPDATED:", updated);
+
+    if (updated) {
+        // alert("Datos actualizados!");
+        showIndicator("Datos actualizados correctamente")
+
+        $("#modalDrEdit").modal("hide");
+        refrescarDoctores();
+    }
 
 });
 
 
+
+
 //editar Usuario
 document.getElementById("usersTableBody").addEventListener("click", async (e) => {
-
     if (e.target.classList.contains("editUser")) {
-        document.getElementById("doctorFormEdit").reset()
+
         const id = e.target.dataset.id;
 
-        const usuarioActual = await getUserById(id)
-        // Cargar datos en el modal
+        const usuarioActual = await getUserById(id);
+
+        // Cargar datos
         document.getElementById("nombreUsuarioEdit").value = usuarioActual[0].nombre;
         document.getElementById("emailUsuarioEdit").value = usuarioActual[0].email;
         document.getElementById("passwordUsuarioEdit").value = usuarioActual[0].password;
         document.getElementById("rolUsuarioEdit").value = usuarioActual[0].rol;
 
+        // Guardar ID en dataset
+        document.getElementById("formEditUsuario").dataset.userId = usuarioActual[0].id;
 
-
-        // Abrir modal
         $("#modalEditUsuario").modal("show");
-
-
-        //subbmit forom
-        document.getElementById("formEditUsuario").addEventListener("submit", async (e) => {
-            e.preventDefault();
-
-            const nombre = document.getElementById("nombreUsuarioEdit").value;
-            const email = document.getElementById("emailUsuarioEdit").value;
-            const password = document.getElementById("passwordUsuarioEdit").value;
-            const rol = document.getElementById("rolUsuarioEdit").value;
-
-
-            const user = {
-                nombre,
-                email,
-                password,
-                rol
-            };
-
-            const updated = await updateUser(usuarioActual[0].id, user);
-
-            if (updated) {
-                alert("Datos actualizados!");
-                refrescarUsuarios();
-                $("#modalEditUsuario").modal("hide");
-                e.target.reset();
-            }
-
-        });
-
-
     }
-
-
-
 });
+
+
+document.getElementById("formEditUsuario").addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    const id = e.target.dataset.userId;
+
+    const user = {
+        nombre: document.getElementById("nombreUsuarioEdit").value,
+        email: document.getElementById("emailUsuarioEdit").value,
+        password: document.getElementById("passwordUsuarioEdit").value,
+        rol: document.getElementById("rolUsuarioEdit").value
+    };
+
+    const updated = await updateUser(id, user);
+
+    if (updated) {
+        // alert("Datos actualizados!");
+        showIndicator("Datos actualizados correctamente")
+
+        refrescarUsuarios();
+        $("#modalEditUsuario").modal("hide");
+        e.target.reset();
+    }
+});
+
 
 //confirmar turno
 document.getElementById("appointmentsTableBody").addEventListener("click", async (e) => {
@@ -293,8 +289,8 @@ document.getElementById("appointmentsTableBody").addEventListener("click", async
     if (e.target.classList.contains("confirmarTurno")) {
         const id = e.target.dataset.id;
         const turno = await getAppointmentById(id)
-
-        if (confirm("esta segurno de confirmar este turno?")) {
+        const ok= await confirmarAccion("esta segurno de confirmar este turno?")
+        if (ok) {
             if (turno.estado == "Pendiente") {
                 const turnoActualizado = {
                     "patientId": turno.patientId,
@@ -308,12 +304,16 @@ document.getElementById("appointmentsTableBody").addEventListener("click", async
                 const updated = await updateAppointment(turno.id, turnoActualizado)
 
                 if (updated) {
-                    alert("turno confirmado")
+                    // alert("turno confirmado")
+                    showIndicator("Datos actualizados correctamente")
+
                     refrescarTurnos()
                 }
             }
             else {
-                alert("turno ya Cancelado o Confirmado previamene")
+
+                showIndicator("turno ya Cancelado o Confirmado previamene", "warning")
+
             }
             //updateDashboard
             refrescarDashboard()
@@ -342,7 +342,7 @@ function cargarTablaDoctores(doctors) {
             <td>${doc.especialidad}</td>
             <td>${doc.diasDisponibles}</td>
             <td>
-                <button class="btn btn-sm btn-primary editarDr" data-id="${doc.id}"  data-toggle="modal" data-target="#modalDrEdit">Editar</button>
+                <button class="btn btn-sm btn-warning editarDr" data-id="${doc.id}"  data-toggle="modal" data-target="#modalDrEdit">Editar</button>
                 <button class="btn btn-sm btn-danger BorrarDr" data-id="${doc.id}">Eliminar</button>
             </td>
         `;
@@ -366,7 +366,7 @@ function cargarTablaUsuarios(users) {
             <td>${user.rol}</td>
 
             <td>
-                <button class="btn btn-sm btn-primary editUser" data-id="${user.id}" data-toggle="modal" data-target="#modalEditUsuario">Editar</button>
+                <button class="btn btn-sm btn-warning editUser" data-id="${user.id}" data-toggle="modal" data-target="#modalEditUsuario">Editar</button>
                 <button class="btn btn-sm btn-danger borrarUsuario" data-id="${user.id}">Eliminar</button>
             </td>
         `;
@@ -569,12 +569,6 @@ function refrescarDashboardFiltrado(turnosFiltrados) {
 
 }
 
-function refrescarDashboardConTurnos(turnos) {
-    refrescarDashboard(turnos);
-}
-
-
-
 
 async function cargarTablaTurnos(turnos) {
     const tbody = document.getElementById("appointmentsTableBody");
@@ -600,7 +594,7 @@ async function cargarTablaTurnos(turnos) {
         const user = mapaUsuarios[turno.patientId];
 
         const tr = document.createElement("tr");
-
+        // tr.classList.add("")
         tr.innerHTML = `
             <td>${turno.id}</td>
             <td>${user.nombre}</td>
@@ -609,7 +603,7 @@ async function cargarTablaTurnos(turnos) {
             <td>${turno.hora}</td>
             <td>${turno.estado}</td>
             <td>
-                <button class="btn btn-sm btn-primary confirmarTurno" data-id="${turno.id}">Confirmar</button>
+                <button class="btn btn-sm btn-info confirmarTurno" data-id="${turno.id}">Confirmar</button>
             </td>
             </td>
         `;
@@ -636,4 +630,48 @@ function hoyLocal() {// para no usar utc y tener la hora correcta
     const month = String(d.getMonth() + 1).padStart(2, "0");
     const day = String(d.getDate()).padStart(2, "0");
     return `${year}-${month}-${day}`;
+}
+function showIndicator(mensaje, tipo = "success", tiempo = 3000) {
+    const alerta = document.getElementById("OpConcretada");
+    const mensajeElem = document.getElementById("mensaje");
+
+    // Reset clases
+    alerta.className = "alert alert-dismissible alert-" + tipo;
+
+    // Mostrar mensaje
+    mensajeElem.innerText = mensaje;
+
+    // Mostrar alerta
+    alerta.style.display = "block";
+
+    // Autocerrar después de X tiempo
+    setTimeout(() => {
+        // $(alerta).alert("close");
+        alerta.style.display = "none";
+    }, tiempo);
+}
+
+function confirmarAccion(mensaje) {
+    return new Promise(resolve => {
+        document.getElementById("modalConfirmMessage").innerText = mensaje;
+
+        // Abrir modal
+        $("#modalConfirm").modal("show");
+
+        const btnConfirmar = document.getElementById("btnConfirmarAccion");
+
+        // Para evitar listeners duplicados
+        btnConfirmar.replaceWith(btnConfirmar.cloneNode(true));
+        const btnNuevo = document.getElementById("btnConfirmarAccion");
+
+        btnNuevo.addEventListener("click", () => {
+            $("#modalConfirm").modal("hide");
+            resolve(true);
+        });
+
+        // Si cierra sin confirmar
+        $('#modalConfirm').on('hidden.bs.modal', () => {
+            resolve(false);
+        });
+    });
 }

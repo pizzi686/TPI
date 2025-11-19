@@ -7,6 +7,8 @@ import { login } from "./auth.js";
 //login
 document.getElementById("loginForm").addEventListener("submit", async (e) => {
     e.preventDefault(); // evita refrescar la página
+    document.getElementById("errorLogin").innerText=""
+
 
     const email = document.getElementById("loginEmail").value;
     const password = document.getElementById("loginPassword").value;
@@ -29,7 +31,11 @@ document.getElementById("loginForm").addEventListener("submit", async (e) => {
         }
     } else {
         // LOGIN FALLIDO
-        alert("Email o contraseña incorrectos");
+        // alert("Email o contraseña incorrectos");
+
+        document.getElementById("errorLogin").innerText="Email o contraseña incorrectos"
+
+
 
     }
 });

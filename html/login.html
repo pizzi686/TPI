@@ -6,11 +6,10 @@
   <title>Clínica Salud - Iniciar Sesión</title>
 
   <!-- Bootstrap 4.4 -->
-  <link
-    rel="stylesheet"
-    href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
-  >
-  <link rel="stylesheet" href="css/style.css">
+  <!-- <linkrel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"> -->
+  <link rel="stylesheet" href="https://bootswatch.com/4/lux/bootstrap.min.css">
+  
+  
 
   <style>
     body {
@@ -25,7 +24,7 @@
 <body>
 
   <div class="container d-flex justify-content-center align-items-center vh-100">
-    <div class="card w-100" style="max-width: 400px;">
+    <div class="card w-100" style="max-width: 500px;">
       <div class="card-body">
         <h3 class="text-center mb-4">Clínica Salud</h3>
 
@@ -42,6 +41,8 @@
             <label for="loginPassword">Contraseña</label>
             <input type="password" id="loginPassword" class="form-control" required>
           </div>
+
+            <span id="errorLogin" style="color: red; padding-bottom: 10px;"> </span><br>  
           <button type="submit" class="btn btn-primary btn-block">Iniciar Sesión</button>
 
         </form>

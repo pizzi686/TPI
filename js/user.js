@@ -109,7 +109,7 @@ document.getElementById("misTurnosTableBody").addEventListener("click", async (e
 
         const id = e.target.dataset.id;
 
-        const ok = confirm("¿Seguro que querés cancelar este turno?");
+        const ok = await confirmarAccion("¿Seguro que querés cancelar este turno?");
         if (!ok) return;
 
         let turno = await getAppointmentById(id)
@@ -119,7 +119,8 @@ document.getElementById("misTurnosTableBody").addEventListener("click", async (e
 
 
         await updateAppointment(id, turno);
-        alert("turno cancelado.");
+        // alert("turno cancelado.");
+        showIndicator("turno cancelado")
 
         refrescarTurnos()
        // rta()
@@ -138,6 +139,7 @@ document.getElementById("nuevoTurnoForm").addEventListener("submit", async (e) =
     const fecha = document.getElementById("fechaTurno").value;
     const hora = document.getElementById("horaTurno").value;
 
+
     if (!doctorId) {
         alert("Seleccione un médico válido.");
         return;
@@ -149,7 +151,9 @@ document.getElementById("nuevoTurnoForm").addEventListener("submit", async (e) =
     const dia = obtenerDiaSemana(fecha); // ej: "Martes"
 
     if (!drSelectedObject[0].diasDisponibles.includes(dia)) {
-        alert(`El médico no atiende el día ${dia}.`);
+        
+
+        showAlert(`Este Dr no atiende el día ${dia}. Seleccione otra fecha`,"Revisar datos ingresados")
         return;
     }
 
@@ -160,7 +164,8 @@ document.getElementById("nuevoTurnoForm").addEventListener("submit", async (e) =
 
     for (const turno of turnosPorDoctor) {
         if (turno.fecha === fecha && turno.hora === hora) {
-            alert("Ese turno ya está ocupado. Elija otro horario.");
+            showAlert("Ese turno ya está ocupado. Elija otro horario.");
+
             return;
         }
     }
@@ -177,7 +182,8 @@ document.getElementById("nuevoTurnoForm").addEventListener("submit", async (e) =
     const saved = await createAppointment(nuevoTurno);
 
     if (saved) {
-        alert("Turno reservado con éxito");
+        // alert("Turno reservado con éxito");
+        showIndicator("Turno reservado con éxito")
         document.getElementById("nuevoTurnoForm").reset();
         refrescarTurnos();
        // rta()
@@ -199,6 +205,65 @@ function obtenerDiaSemana(fechaInput) {
     const d = new Date(anio, mes - 1, dia);
 
     return dias[d.getDay()];
+}
+
+//restringir fecha input
+const hoy = new Date().toISOString().split("T")[0];
+document.getElementById("fechaTurno").setAttribute("min", hoy);
+// document.getElementById("horaTurno").setAttribute("min", hoy);
+
+
+
+function showIndicator(mensaje, tipo = "success", tiempo = 3000) {
+    const alerta = document.getElementById("OpConcretada");
+    const mensajeElem = document.getElementById("mensaje");
+
+    // Reset clases
+    alerta.className = "alert alert-dismissible alert-" + tipo;
+
+    // Mostrar mensaje
+    mensajeElem.innerText = mensaje;
+
+    // Mostrar alerta
+    alerta.style.display = "block";
+
+    // Autocerrar después de X tiempo
+    setTimeout(() => {
+        // $(alerta).alert("close");
+        alerta.style.display = "none";
+    }, tiempo);
+}
+
+function confirmarAccion(mensaje) {
+    return new Promise(resolve => {
+        document.getElementById("modalConfirmMessage").innerText = mensaje;
+
+        // Abrir modal
+        $("#modalConfirm").modal("show");
+
+        const btnConfirmar = document.getElementById("btnConfirmarAccion");
+
+        // Para evitar listeners duplicados
+        btnConfirmar.replaceWith(btnConfirmar.cloneNode(true));
+        const btnNuevo = document.getElementById("btnConfirmarAccion");
+
+        btnNuevo.addEventListener("click", () => {
+            $("#modalConfirm").modal("hide");
+            resolve(true);
+        });
+
+        // Si cierra sin confirmar
+        $('#modalConfirm').on('hidden.bs.modal', () => {
+            resolve(false);
+        });
+    });
+}
+
+function showAlert(message, title = "Mensaje") {
+    document.getElementById("alertModalLabel").innerText = title;
+    document.getElementById("alertModalMessage").innerText = message;
+
+    $("#alertModal").modal("show");
 }
 
 

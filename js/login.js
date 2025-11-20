@@ -1,4 +1,5 @@
 import { login } from "./auth.js";
+import { createUser } from "./api.js";
 
 
 
@@ -34,8 +35,31 @@ document.getElementById("loginForm").addEventListener("submit", async (e) => {
         // alert("Email o contraseña incorrectos");
 
         document.getElementById("errorLogin").innerText="Email o contraseña incorrectos"
+        document.getElementById("registrar").innerText=""
 
 
 
+
+    }
+});
+
+
+//signin
+document.getElementById("formNuevoUsuario").addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    const nombre = document.getElementById("nombreUsuario").value;
+    const email = document.getElementById("emailUsuario").value;
+    const password = document.getElementById("passwordUsuario").value;
+    const rol = "USER"
+    const nuevoUsuario = { nombre, email, password, rol };
+
+    const saved = await createUser(nuevoUsuario);
+
+    if (saved) {
+        document.getElementById("registrar").innerText="Usuario Creado"
+        $("#modalNuevoUsuario").modal("hide");
+
+        
     }
 });

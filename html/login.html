@@ -41,15 +41,68 @@
             <label for="loginPassword">Contraseña</label>
             <input type="password" id="loginPassword" class="form-control" required>
           </div>
+<br>
+            <span id="errorLogin" style="color: red;"> </span>  
+            <span id="registrar" style="color: green;"> </span>
 
-            <span id="errorLogin" style="color: red; padding-bottom: 10px;"> </span><br>  
           <button type="submit" class="btn btn-primary btn-block">Iniciar Sesión</button>
+            <button id="refreshAppointmentsBtn" class="btn btn-secondary btn-block" data-toggle="modal"
+            data-target="#modalNuevoUsuario"> Crear usuario</button>
 
         </form>
 
       
       </div>
     </div>
+
+      <!-- MODAL NUEVO USER -->
+  <div class="modal fade" id="modalNuevoUsuario" tabindex="-1" role="dialog" aria-labelledby="modalNuevoUsuarioLabel"
+    aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+
+        <!-- Header -->
+        <div class="modal-header">
+          <h5 class="modal-title" id="modalNuevoUsuarioLabel">Nuevo Usuario</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Cerrar">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+
+        <!-- Body -->
+        <div class="modal-body">
+          <form id="formNuevoUsuario">
+
+            <div class="form-group">
+              <label for="nombreUsuario">Nombre</label>
+              <input type="text" class="form-control" id="nombreUsuario" required>
+            </div>
+
+            <div class="form-group">
+              <label for="emailUsuario">Email</label>
+              <input type="email" class="form-control" id="emailUsuario" required>
+            </div>
+
+            <div class="form-group">
+              <label for="passwordUsuario">Contraseña</label>
+              <input type="password" class="form-control" id="passwordUsuario" required>
+            </div>
+
+      
+
+          </form>
+        </div>
+
+        <!-- Footer -->
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+          <button type="submit" form="formNuevoUsuario" class="btn btn-primary">Guardar</button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
   </div>
 
   <!-- JS de Bootstrap -->

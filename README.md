@@ -3,7 +3,7 @@
 ##Proba [aqui](https://pizzi686.github.io/TPI/html/login.html): 
 
 El proyecto incluye:
-- ABM completo de usuarios, doctores, pacientes y turnos mediante Mockapi.
+- ABM completo de usuarios, doctores, pacientes y turnos.
 - Filtrado de turnos y doctores.
 - Panel administrativo con visualización resumida.
 
